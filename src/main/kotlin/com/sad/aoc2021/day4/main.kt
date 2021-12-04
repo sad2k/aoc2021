@@ -14,7 +14,7 @@ data class ColumnMarked(val col: Int) : MarkingStatus
 
 data class Result(val number: Int, val grid: List<List<Int>>, val gridState: List<MutableList<Boolean>>, val markingStatus: MarkingStatus)
 
-fun findWinningGrid(numbers: List<Int>, grids: List<List<List<Int>>>): Result {
+fun findFirstWinningGrid(numbers: List<Int>, grids: List<List<List<Int>>>): Result {
     val states: List<List<MutableList<Boolean>>> = grids.map { it.map { it.map { false }.toMutableList() } }
     for (num in numbers) {
         for (i in grids.indices) {
@@ -23,6 +23,28 @@ fun findWinningGrid(numbers: List<Int>, grids: List<List<List<Int>>>): Result {
             val markingStatus = markNumber(grid, gridState, num)
             if (markingStatus != NotFullyMarked) {
                 return Result(num, grid, gridState, markingStatus)
+            }
+        }
+    }
+    throw IllegalStateException("no winner detected")
+}
+
+fun findLastWinningGrid(numbers: List<Int>, grids: List<List<List<Int>>>): Result {
+    val states: List<List<MutableList<Boolean>>> = grids.map { it.map { it.map { false }.toMutableList() } }
+    val pendingGrids = grids.indices.toMutableSet()
+    for (num in numbers) {
+        for (i in grids.indices) {
+            if (i in pendingGrids) {
+                val grid = grids[i]
+                val gridState = states[i]
+                val markingStatus = markNumber(grid, gridState, num)
+                if (markingStatus != NotFullyMarked) {
+                    if (pendingGrids.size == 1) {
+                        return Result(num, grid, gridState, markingStatus)
+                    } else {
+                        pendingGrids.remove(i)
+                    }
+                }
             }
         }
     }
@@ -89,10 +111,16 @@ fun main() {
     val numbers = split[0][0].split(",").map(String::toInt)
     val grids = split.slice(1 until split.size)
         .map { it.map { str -> str.split("\\s+".toRegex()).filter(String::isNotEmpty).map(String::toInt) } }
-    val res = findWinningGrid(numbers, grids)
+
+    // part 1
+    val res = findFirstWinningGrid(numbers, grids)
     val unmarkedSum = calculateUnmarkedSum(res.grid, res.gridState)
     println(res.number * unmarkedSum)
 
+    // part 2
+    val res2 = findLastWinningGrid(numbers, grids)
+    val unmarkedSum2 = calculateUnmarkedSum(res2.grid, res2.gridState)
+    println(res2.number * unmarkedSum2)
 }
 
 

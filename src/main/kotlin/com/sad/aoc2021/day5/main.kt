@@ -3,7 +3,7 @@ package com.sad.aoc2021.day5
 import com.sad.aoc2021.loadFromResources
 import java.lang.StringBuilder
 
-fun populateMap(parsed: List<Pair<Pair<Int, Int>, Pair<Int, Int>>>, map: Array<IntArray>) {
+fun populateMap(parsed: List<Pair<Pair<Int, Int>, Pair<Int, Int>>>, map: Array<IntArray>, supportDiags: Boolean) {
     for (pair in parsed) {
         val (x1, y1) = pair.first
         val (x2, y2) = pair.second
@@ -28,7 +28,33 @@ fun populateMap(parsed: List<Pair<Pair<Int, Int>, Pair<Int, Int>>>, map: Array<I
                 }
             }
         } else {
-            // not supported
+            if (supportDiags) {
+                val xstep: Int
+                val ystep: Int
+                val xpred: (Int, Int) -> Boolean
+                val ypred: (Int, Int) -> Boolean
+                if (x1 < x2) {
+                    xstep = 1
+                    xpred = { curx: Int, lastx: Int -> curx <= lastx }
+                } else {
+                    xstep = -1
+                    xpred = { curx: Int, lastx: Int -> curx >= lastx }
+                }
+                if (y1 < y2) {
+                    ystep = 1
+                    ypred = { cury: Int, lasty: Int -> cury <= lasty }
+                } else {
+                    ystep = -1
+                    ypred = { cury: Int, lasty: Int -> cury >= lasty }
+                }
+                var x = x1
+                var y = y1
+                while (xpred(x, x2) && ypred(y, y2)) {
+                    map[y][x] = map[y][x] + 1
+                    x += xstep
+                    y += ystep
+                }
+            }
         }
     }
 }
@@ -64,10 +90,18 @@ fun main() {
     }
     val xmax = parsed.fold(0) { acc, pair -> Math.max(Math.max(acc, pair.first.first), pair.second.first) }
     val ymax = parsed.fold(0) { acc, pair -> Math.max(Math.max(acc, pair.first.second), pair.second.second) }
-    val map = Array(ymax + 1) { IntArray(xmax + 1) }
-    populateMap(parsed, map)
-//    printMap(map)
-    println(calculateNumberOfOverlaps(map))
+
+    // part 1
+    val map1 = Array(ymax + 1) { IntArray(xmax + 1) }
+    populateMap(parsed, map1, false)
+//    printMap(map1)
+    println(calculateNumberOfOverlaps(map1))
+
+    // part 2
+    val map2 = Array(ymax + 1) { IntArray(xmax + 1) }
+    populateMap(parsed, map2, true)
+//    printMap(map2)
+    println(calculateNumberOfOverlaps(map2))
 }
 
 

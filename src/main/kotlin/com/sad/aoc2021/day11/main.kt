@@ -34,7 +34,7 @@ fun light(input: MutableList<MutableList<Int>>, i: Int, j: Int) {
 
 fun simulateStep(input: List<List<Int>>): List<List<Int>> {
     // increase by 1
-    var mutableMap = input.map {
+    val mutableMap = input.map {
         it.map {
             it + 1
         }.toMutableList()
@@ -50,14 +50,24 @@ fun simulateStep(input: List<List<Int>>): List<List<Int>> {
     return mutableMap
 }
 
-fun simulateSteps(input: List<List<Int>>, steps: Int): Int {
+fun simulateSteps(input: List<List<Int>>, steps: Int): Pair<Int, List<List<Int>>> {
     var map = input
     var lights = 0
     for (i in 1..steps) {
         map = simulateStep(map)
         lights += map.map { it.map { v -> if (v == 0) 1 else 0 }.sum() }.sum()
     }
-    return lights
+    return (lights to map)
+}
+
+fun findSynchronizationMoment(input: List<List<Int>>): Int {
+    var i = 0
+    var map = input
+    do {
+        i += 1
+        map = simulateStep(map)
+    } while (!(map.all { it.all { v -> v == 0 } }))
+    return i
 }
 
 fun main() {
@@ -68,5 +78,10 @@ fun main() {
     }
 //    val after1step = simulateStep(simulateStep(input))
 //    println(after1step.map { it.joinToString(separator = "") }.joinToString(separator = "\n"))
-    println(simulateSteps(input, 100))
+
+    // part 1
+    println(simulateSteps(input, 100).first)
+
+    // part 2
+    println(findSynchronizationMoment(input))
 }

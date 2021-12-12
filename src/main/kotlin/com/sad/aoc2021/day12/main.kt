@@ -7,8 +7,8 @@ fun buildGraph(input: List<String>): Map<String, List<String>> {
     input.map { it.split("-") }.forEach {
         val from = it[0]
         val to = it[1]
-        res.computeIfAbsent(from, { _ -> mutableListOf<String>() }).add(to)
-        res.computeIfAbsent(to, { _ -> mutableListOf<String>() }).add(from)
+        res.computeIfAbsent(from) { mutableListOf() }.add(to)
+        res.computeIfAbsent(to) { mutableListOf() }.add(from)
     }
     return res
 }

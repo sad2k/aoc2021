@@ -65,10 +65,16 @@ fun main() {
     val input = loadFromResources("day13.txt").readLines().splitWhen { it.trim().isEmpty() }
     val dots = input[0]
     val folds = input[1]
-    val map = buildMap(dots)
+    var map = buildMap(dots)
 
     // part 1
     val folded = fold(map, folds[0].contains("fold along y"))
     println(countDots(folded))
 //    println(printMap(fold(fold(map, true), false)))
+
+    // part 2
+    folds.forEach{
+        map = fold(map, it.contains("fold along y"))
+    }
+    println(printMap(map))
 }

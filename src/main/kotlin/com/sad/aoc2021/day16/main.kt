@@ -5,7 +5,7 @@ import com.sad.aoc2021.readFirstLine
 import java.lang.IllegalStateException
 import java.lang.StringBuilder
 
-fun parse(str: List<Char>, versionCallback: (Int) -> Unit): List<Char> {
+fun parse(str: List<Char>, versionCallback: (Int) -> Unit): Pair<List<Char>, Long> {
     var current = str
 
     // version
@@ -29,10 +29,13 @@ fun parse(str: List<Char>, versionCallback: (Int) -> Unit): List<Char> {
             bitsBuilder.append(bits)
             lastBits = lastOrNot == '0'
         }
+        val res = bitsBuilder.toString().toLong(2)
+        return Pair(current, res)
     } else {
         // operator
         val lengthTypeId = current.take(1)[0]
         current = current.drop(1)
+        val results = mutableListOf<Long>()
         if (lengthTypeId == '0') {
             // length
             val length = current.take(15).joinToString(separator = "").toInt(2)
@@ -40,7 +43,9 @@ fun parse(str: List<Char>, versionCallback: (Int) -> Unit): List<Char> {
             val initialSize = current.size
             var consumed = 0
             while (consumed < length) {
-                current = parse(current, versionCallback)
+                val pair = parse(current, versionCallback)
+                current = pair.first
+                results.add(pair.second)
                 consumed = initialSize - current.size
             }
             if (consumed > length) {
@@ -51,12 +56,23 @@ fun parse(str: List<Char>, versionCallback: (Int) -> Unit): List<Char> {
             val numberOfSubPackets = current.take(11).joinToString(separator = "").toInt(2)
             current = current.drop(11)
             for (i in 1..numberOfSubPackets) {
-                current = parse(current, versionCallback)
+                val pair = parse(current, versionCallback)
+                current = pair.first
+                results.add(pair.second)
             }
         }
-    }
 
-    return current
+        return Pair(current, when(typeId) {
+            0 -> if (results.size != 1) results.sum() else results[0]
+            1 -> if (results.size != 1) results.reduce{ v1, v2 -> v1*v2 } else results[0]
+            2 -> results.minOrNull()!!
+            3 -> results.maxOrNull()!!
+            5 -> if (results[0] > results[1]) 1 else 0
+            6 -> if (results[0] < results[1]) 1 else 0
+            7 -> if (results[0] == results[1]) 1 else 0
+            else -> throw IllegalArgumentException("unsupported typeId: ${typeId}")
+        })
+    }
 }
 
 fun convertToBinary(str: String): List<Char> {
@@ -87,8 +103,8 @@ fun main() {
     val input = loadFromResources("day16.txt").readFirstLine()
     val converted = convertToBinary(input)
     var versionSum = 0
-    parse(converted, {
+    println(parse(converted, {
         versionSum += it
-    })
-    println(versionSum)
+    }))
+    println("For part 1, version sum: ${versionSum}")
 }

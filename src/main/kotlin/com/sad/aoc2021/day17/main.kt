@@ -13,6 +13,7 @@ fun simulate(xVelocity: Int, yVelocity: Int, xTarget: Pair<Int, Int>, yTarget: P
     var coord = Coord(0, 0)
     var currentXVelocity = xVelocity
     var currentYVelocity = yVelocity
+    var iteration = 0
     while (!finished) {
         path.add(coord)
 
@@ -21,21 +22,22 @@ fun simulate(xVelocity: Int, yVelocity: Int, xTarget: Pair<Int, Int>, yTarget: P
             break
         }
 
-        if (coord.x > xTarget.second) {
+        // is this the right condition? seems to work
+        if (coord.x > xTarget.second || coord.y < yTarget.first) {
             inTarget = false
             break
         }
 
-        val xAdj = if (currentXVelocity > 0) {
+        coord = Coord(coord.x + currentXVelocity, coord.y + currentYVelocity)
+        currentXVelocity += if (currentXVelocity > 0) {
             -1
-        } else if (currentYVelocity < 0) {
+        } else if (currentXVelocity < 0) {
             1
         } else {
             0
         }
-        coord = Coord(coord.x + currentXVelocity, coord.y + currentYVelocity)
-        currentXVelocity += xAdj
         currentYVelocity -= 1
+        iteration++
     }
     return Pair(path, inTarget)
 }
@@ -50,10 +52,12 @@ fun main() {
 
     // who cares - will use brute force
     var maxHeight = Integer.MIN_VALUE
-    for(xv in -100..100) {
-        for(yv in -100..100) {
+    var values = 0
+    for(xv in 0..315) {
+        for(yv in -500..500) {
             val (path, inTarget) = simulate(xv, yv, xTarget, yTarget)
             if (inTarget) {
+                values++
                 val height = path.maxOf { it.y }
                 if (height > maxHeight) {
                     maxHeight = height
@@ -61,6 +65,6 @@ fun main() {
             }
         }
     }
-
     println(maxHeight)
+    println(values)
 }

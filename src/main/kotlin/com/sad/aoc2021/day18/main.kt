@@ -1,8 +1,6 @@
 package com.sad.aoc2021.day18
 
 import com.sad.aoc2021.loadFromResources
-import com.sad.aoc2021.readFirstLine
-import kotlin.IllegalArgumentException
 
 abstract class SnailfishNumber(var parent: SnailfishPair?)
 
@@ -66,7 +64,7 @@ fun parse(s: String): SnailfishNumber {
 }
 
 fun reduce(num: SnailfishNumber) {
-    var reductionsMade = false
+    var reductionsMade: Boolean
     do {
         reductionsMade = tryReduce(num, false)
         if (!reductionsMade) {
@@ -114,7 +112,7 @@ fun explode(num: SnailfishPair) {
     val right = num.right as SnailfishRegular
 
     val leftRegular = goLeftUntilRegular(num)
-    var rightRegular = goRightUntilRegular(num)
+    val rightRegular = goRightUntilRegular(num)
 //    println("left regular: ${leftRegular}")
 //    println("right regular: ${rightRegular}")
 
@@ -197,5 +195,25 @@ fun magnitude(num: SnailfishNumber): Long {
 
 fun main() {
     val input = loadFromResources("day18.txt").readLines().map(::parse)
+
+    // part 1
     println(magnitude(input.reduce { acc, num -> add(acc, num) }))
+
+    // part 2
+    // numbers are mutable so to use them multiple times will re-parse
+    val input2 = loadFromResources("day18.txt").readLines()
+    var maxMag = 0L
+    for (i in input2.indices) {
+        for (j in input2.indices) {
+            if (i != j) {
+                val mag = magnitude(add(parse(input2[i]), parse(input2[j])))
+                if (mag > maxMag) {
+                    maxMag = mag
+                }
+            }
+        }
+    }
+    println(maxMag)
+
 }
+

@@ -11,6 +11,10 @@ data class Coord(val x: Int, val y: Int, val z: Int) {
     operator fun plus(that: Coord): Coord {
         return Coord(x + that.x, y + that.y, z + that.z)
     }
+
+    fun manhattanDistance(that: Coord): Int {
+        return Math.abs(x - that.x) + Math.abs(y - that.y) + Math.abs(z - that.z)
+    }
 }
 
 // https://imgur.com/a/g1JVC3F
@@ -80,7 +84,7 @@ private fun findOverlapped(
     return null
 }
 
-fun resolveScanners(scanners: List<List<Coord>>): Map<Int,ScannerDetails> {
+fun resolveScanners(scanners: List<List<Coord>>): Map<Int, ScannerDetails> {
     val baseScanners = mutableListOf(0)
     val unresolvedScanners = (scanners.indices - baseScanners).toMutableList()
     val resolvedScanners = mutableMapOf<Int, ScannerDetails>()
@@ -106,7 +110,7 @@ fun resolveScanners(scanners: List<List<Coord>>): Map<Int,ScannerDetails> {
     return resolvedScanners
 }
 
-private fun findBeacons(scanners: List<List<Coord>>, details: Map<Int,ScannerDetails>): MutableSet<Coord> {
+private fun findBeacons(scanners: List<List<Coord>>, details: Map<Int, ScannerDetails>): MutableSet<Coord> {
     val allBeacons = mutableSetOf<Coord>()
     for (i in 0 until details.size) {
         var beacons = scanners[i]
@@ -124,9 +128,39 @@ private fun findBeacons(scanners: List<List<Coord>>, details: Map<Int,ScannerDet
     return allBeacons
 }
 
+private fun findScannerLocation(idx: Int, details: Map<Int, ScannerDetails>): Coord {
+    var currentScanner = idx
+    var coord = Coord(0, 0, 0)
+    while (currentScanner != 0) {
+        val dets = details[currentScanner]!!
+        coord = dets.transform(coord)
+        coord = coord + dets.delta
+        currentScanner = dets.deltaTo
+    }
+    return coord
+}
+
 fun main() {
     val input = loadFromResources("day19.txt").readLines().splitWhen { it.trim().isEmpty() }
         .map { it.drop(1).map { str -> parseCoord(str) } }
+
+    // part 1
     val scannerDetails = resolveScanners(input)
     println(findBeacons(input, scannerDetails).size)
+
+    // part 2
+    var max = 0
+    for (i in input.indices) {
+        val loc = findScannerLocation(i, scannerDetails)
+        for (j in i + 1 until input.size) {
+            val loc2 = findScannerLocation(j, scannerDetails)
+            val dist = loc.manhattanDistance(loc2)
+            if (dist > max) {
+                max = dist
+            }
+        }
+    }
+    println(max)
 }
+
+

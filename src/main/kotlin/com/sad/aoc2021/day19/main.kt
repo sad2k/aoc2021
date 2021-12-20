@@ -80,10 +80,10 @@ private fun findOverlapped(
     return null
 }
 
-fun findBeacons(scanners: List<List<Coord>>): Int {
+fun resolveScanners(scanners: List<List<Coord>>): Map<Int,ScannerDetails> {
     val baseScanners = mutableListOf(0)
-    var unresolvedScanners = (scanners.indices - baseScanners).toMutableList()
-    var resolvedScanners = mutableMapOf<Int, ScannerDetails>()
+    val unresolvedScanners = (scanners.indices - baseScanners).toMutableList()
+    val resolvedScanners = mutableMapOf<Int, ScannerDetails>()
     resolvedScanners[0] = ScannerDetails(Coord(0, 0, 0), emptyList(), { it }, 0)
 
     while (!baseScanners.isEmpty()) {
@@ -103,14 +103,17 @@ fun findBeacons(scanners: List<List<Coord>>): Int {
         unresolvedScanners.removeAll(resolved)
     }
 
-    var allBeacons = mutableSetOf<Coord>()
-    for (i in scanners.indices) {
+    return resolvedScanners
+}
 
+private fun findBeacons(scanners: List<List<Coord>>, details: Map<Int,ScannerDetails>): MutableSet<Coord> {
+    val allBeacons = mutableSetOf<Coord>()
+    for (i in 0 until details.size) {
         var beacons = scanners[i]
         var currentScanner = i
 
         while (currentScanner != 0) {
-            val dets = resolvedScanners[currentScanner]!!
+            val dets = details[currentScanner]!!
             beacons = beacons.map(dets.transform).map { it + dets.delta }
             currentScanner = dets.deltaTo
         }
@@ -118,14 +121,12 @@ fun findBeacons(scanners: List<List<Coord>>): Int {
         allBeacons.addAll(beacons)
     }
 
-    return allBeacons.size
+    return allBeacons
 }
-
 
 fun main() {
     val input = loadFromResources("day19.txt").readLines().splitWhen { it.trim().isEmpty() }
         .map { it.drop(1).map { str -> parseCoord(str) } }
-//    println(input)
-//    println(findOverlapped(input[0], input[1]))
-    println(findBeacons(input))
+    val scannerDetails = resolveScanners(input)
+    println(findBeacons(input, scannerDetails).size)
 }

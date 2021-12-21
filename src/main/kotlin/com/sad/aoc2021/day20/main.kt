@@ -50,6 +50,16 @@ fun main() {
     val enhanced1 = enhance(algo, image, '.')
     val enhanced2 = enhance(algo, enhanced1.first, enhanced1.second)
     println(enhanced2.first.map { it.count { ch -> ch == '#' } }.sum())
+
+    // part 2
+    var curImage = image
+    var curOutside = '.'
+    for (i in 1..50) {
+        val res = enhance(algo, curImage, curOutside)
+        curImage = res.first
+        curOutside = res.second
+    }
+    println(curImage.map { it.count { ch -> ch == '#' } }.sum())
 }
 
 

@@ -74,6 +74,11 @@ private fun solve(cuboids: List<Cuboid>, ignoreOutside: Boolean): Long {
 
 fun main() {
     val input = loadFromResources("day22.txt").readLines().map(::parse)
+
+    // part 1
     println(solve(input, true))
+
+    // part 2
+    println(solve(input, false))
 
 }
